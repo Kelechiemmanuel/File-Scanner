@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+    font-family: urbanist, sans-serif;
+    font-weight: 200;
+    padding: 0;
+    margin: 0;
+    font-style: normal;
+}
