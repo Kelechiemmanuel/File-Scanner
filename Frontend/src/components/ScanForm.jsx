@@ -108,7 +108,7 @@ function ScanForm({ onScan, onUpload, loading }) {
                     <button
                         type="submit"
                         disabled={loading || !files.length}
-                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 border dark:bg-gray-900 bg-white text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 border dark:bg-gray-900 bg-white text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:bg-gray-700 hover:text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                         <TbPlayerPlay size={16} />
                         {loading ? "Scanning..." : "Scan"}
