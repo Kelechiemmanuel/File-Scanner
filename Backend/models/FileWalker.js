@@ -11,12 +11,23 @@ const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
 
 function walk(dir, files = []) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+
         if (entry.isDirectory()) {
-            if (!SKIP_DIRS.has(entry.name)) walk(path.join(dir, entry.name), files);
-        } else if (SCAN_EXTENSIONS.includes(path.extname(entry.name)) || entry.name === ".env") {
-            files.push(path.join(dir, entry.name));
+            if (!SKIP_DIRS.has(entry.name)) {
+                walk(path.join(dir, entry.name), files);
+            }
+        } else if (
+            SCAN_EXTENSIONS.includes(path.extname(entry.name)) ||
+            entry.name === ".env"
+        ) {
+            const filePath = path.join(dir, entry.name);
+
+            console.log("FILE BEING SCANNED:", filePath);
+
+            files.push(filePath);
         }
     }
+
     return files;
 }
 
