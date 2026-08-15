@@ -1,6 +1,4 @@
-
 //Scans individual files for rule matches (secrets + insecure configs).
-
 
 const fs = require("fs");
 const path = require("path");
@@ -15,6 +13,16 @@ function redact(text) {
 
 function isCommentLine(trimmedLine) {
     return trimmedLine.startsWith("//") || trimmedLine.startsWith("*") || trimmedLine.startsWith("/*");
+}
+
+function getContext(lines, index, radius = 2) {
+    const start = Math.max(0, index - radius);
+    const end = Math.min(lines.length, index + radius + 1);
+
+    return lines.slice(start, end).map((content, i) => ({
+        line: start + i + 1,
+        content: redact(content.trim().slice(0, 150)),
+    }));
 }
 
 function scanFile(filePath, unexcludedEnvFiles) {
@@ -40,6 +48,7 @@ function scanFile(filePath, unexcludedEnvFiles) {
                     rule: match.name,
                     severity: match.severity,
                     snippet: redact(trimmed.slice(0, 100)),
+                    context: getContext(lines, index),
                 })
             );
         }

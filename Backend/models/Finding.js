@@ -1,9 +1,7 @@
-
 // Defines what a "finding" looks like, and how findings are ordered.
 
-
-function createFinding({ file, line, rule, severity, snippet }) {
-    return { file, line, rule, severity, snippet };
+function createFinding({ file, line, rule, severity, snippet, context }) {
+    return { file, line, rule, severity, snippet, context };
 }
 
 function severityRank(sev) {
@@ -11,7 +9,9 @@ function severityRank(sev) {
 }
 
 function sortBySeverity(findings) {
-    return [...findings].sort((a, b) => severityRank(a.severity) - severityRank(b.severity));
+    return [...findings].sort(
+        (a, b) => severityRank(a.severity) - severityRank(b.severity)
+    );
 }
 
 module.exports = { createFinding, severityRank, sortBySeverity };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ScanForm from "./components/ScanForm";
 import SummaryCards from "./components/SummaryCards";
+import SecurityScore from "./components/SecurityScore";
 import FindingsTable from "./components/FindingsTable";
 import { callScanApi, uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
@@ -87,7 +88,10 @@ function App() {
 
         {result && (
           <>
+            <SecurityScore summary={result.summary} />
+
             <SummaryCards summary={result.summary} />
+
             <FindingsTable findings={result.findings} />
 
             <div className="flex justify-center sm:justify-end mt-3">

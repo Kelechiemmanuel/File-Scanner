@@ -69,13 +69,13 @@ function ScanForm({ onScan, onUpload, loading }) {
                         value={repoUrl}
                         onChange={(e) => setRepoUrl(e.target.value)}
                         placeholder="https://github.com/username/repository"
-                        className="flex-1 px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                        className="flex-1 px-3.5 py-2.5 border border-gray-300 dark:text-white rounded-lg text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
                     />
 
                     <button
                         type="submit"
                         disabled={loading || !repoUrl.trim()}
-                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 border dark:bg-gray-900 bg-white text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] border rounded-lg text-sm font-medium hover:bg-gray-700 disabled:cursor-not-allowed"
                     >
                         <TbPlayerPlay size={16} />
                         {loading ? "Scanning..." : "Scan"}
@@ -108,7 +108,7 @@ function ScanForm({ onScan, onUpload, loading }) {
                     <button
                         type="submit"
                         disabled={loading || !files.length}
-                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 border dark:bg-gray-900 bg-white text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:bg-gray-700 hover:text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] border rounded-lg text-sm font-medium hover:bg-gray-700 disabled:cursor-not-allowed"
                     >
                         <TbPlayerPlay size={16} />
                         {loading ? "Scanning..." : "Scan"}
