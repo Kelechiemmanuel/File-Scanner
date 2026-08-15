@@ -1,4 +1,4 @@
-const BASE_URL = "https://file-scanner-8u8e.onrender.com/api";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const callScanApi = async ({ targetDir, repoUrl }) => {
     try {

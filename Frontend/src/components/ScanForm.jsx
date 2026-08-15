@@ -2,22 +2,23 @@ import { useState } from "react";
 import { TbPlayerPlay } from "react-icons/tb";
 
 function ScanForm({ onScan, loading }) {
-    const [targetDir, setTargetDir] = useState("");
+    const [repoUrl, setRepoUrl] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onScan(targetDir);
+        onScan(repoUrl);
     };
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-6">
             <input
                 type="text"
-                value={targetDir}
-                onChange={(e) => setTargetDir(e.target.value)}
-                placeholder="C:\Users\USER\Projects\blog-app"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/username/repository"
                 className="flex-1 px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
             />
+
             <button
                 type="submit"
                 disabled={loading}
