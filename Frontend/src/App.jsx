@@ -13,14 +13,18 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleScan = async (targetDir) => {
+  const handleScan = async (repoUrl) => {
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const data = await callScanApi(targetDir);
+      const data = await callScanApi({
+        repoUrl
+      });
+
       await new Promise(resolve => setTimeout(resolve, 2000));
+
       setResult(data);
     } catch (err) {
       setError(err.message);
