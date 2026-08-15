@@ -10,7 +10,10 @@ function ScanForm({ onScan, loading }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-6">
+        <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row gap-2 mb-6"
+        >
             <input
                 type="text"
                 value={repoUrl}
