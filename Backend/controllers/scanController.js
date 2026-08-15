@@ -1,36 +1,55 @@
-/**
- * controllers/scanController.js
- * Receives the request, calls the models in the right order, sends the response.
- * Equivalent role to LibraryManager in the SLCAS project — a coordinating facade,
- * not where the actual logic lives.
- */
+
+// controllers/scanController.js
+// Receives the request, calls the models in the right order, sends the response.
+// Accepts EITHER a local folder path (targetDir) — used for local/defense demos —
+// OR a public GitHub repo URL (repoUrl) — used for the public-facing version.
+
 
 const fs = require("fs");
 const { walk } = require("../models/FileWalker");
 const { checkEnvExclusion } = require("../models/EnvChecker");
 const { scanAll } = require("../models/SecretScanner");
 const { sortBySeverity } = require("../models/Finding");
+const { cloneRepo, cleanupClone } = require("../models/RepoCloner");
 const reportView = require("../views/reportView");
 
-function scan(req, res) {
-    const { targetDir } = req.body;
+async function runScan(dirToScan) {
+    const files = walk(dirToScan);
+    const envCheck = checkEnvExclusion(dirToScan, files);
+    const secretFindings = scanAll(files, envCheck.unexcludedEnvFiles);
+    return sortBySeverity([...secretFindings, ...envCheck.findings]);
+}
 
-    if (!targetDir || typeof targetDir !== "string") {
-        return res.status(400).json({ error: "targetDir is required in the request body." });
-    }
-    if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) {
-        return res.status(400).json({ error: "That folder path doesn't exist on the server." });
+async function scan(req, res) {
+    const { targetDir, repoUrl } = req.body;
+
+    if (!targetDir && !repoUrl) {
+        return res.status(400).json({ error: "Provide either targetDir (local path) or repoUrl (GitHub URL)." });
     }
 
+    // Local folder path — used for local demos, same behavior as before.
+    if (targetDir) {
+        if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) {
+            return res.status(400).json({ error: "That folder path doesn't exist on the server." });
+        }
+        try {
+            const allFindings = await runScan(targetDir);
+            return res.json(reportView.toJSON(targetDir, allFindings));
+        } catch (err) {
+            return res.status(500).json({ error: "Scan failed", details: err.message });
+        }
+    }
+
+    // GitHub repo URL — clone into a temp folder, scan it, then always clean up.
+    let tempDir;
     try {
-        const files = walk(targetDir);
-        const envCheck = checkEnvExclusion(targetDir, files);
-        const secretFindings = scanAll(files, envCheck.unexcludedEnvFiles);
-        const allFindings = sortBySeverity([...secretFindings, ...envCheck.findings]);
-
-        return res.json(reportView.toJSON(targetDir, allFindings));
+        tempDir = await cloneRepo(repoUrl);
+        const allFindings = await runScan(tempDir);
+        return res.json(reportView.toJSON(repoUrl, allFindings));
     } catch (err) {
-        return res.status(500).json({ error: "Scan failed", details: err.message });
+        return res.status(400).json({ error: err.message });
+    } finally {
+        cleanupClone(tempDir);
     }
 }
 
