@@ -2,11 +2,16 @@ import { useState } from "react";
 import { TbPlayerPlay } from "react-icons/tb";
 
 function ScanForm({ onScan, loading }) {
-    const [repoUrl, setRepoUrl] = useState("");
+    const [target, setTarget] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onScan(repoUrl);
+
+        const value = target.trim();
+
+        if (!value) return;
+
+        onScan(value);
     };
 
     return (
@@ -16,9 +21,9 @@ function ScanForm({ onScan, loading }) {
         >
             <input
                 type="text"
-                value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
-                placeholder="https://github.com/username/repository"
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                placeholder="GitHub URL or local project path"
                 className="flex-1 px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
             />
 
