@@ -22,8 +22,6 @@ function walk(dir, files = []) {
         ) {
             const filePath = path.join(dir, entry.name);
 
-            console.log("FILE BEING SCANNED:", filePath);
-
             files.push(filePath);
         }
     }

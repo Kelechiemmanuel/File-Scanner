@@ -101,8 +101,6 @@ async function scanUpload(req, res) {
         );
 
     } catch (err) {
-        console.error("Upload scan error:", err);
-
         return res.status(500).json({
             error: "Upload scan failed",
             details: err.message
