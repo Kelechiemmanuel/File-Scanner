@@ -7,13 +7,12 @@ const scanRoutes = require("./routes/scanRoutes");
 
 const app = express();
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://file-scanner-dun.vercel.app"
-];
+const corsOptions = {
+    origin: "https://file-scanner-dun.vercel.app",
+    credentials: true
+};
 
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api", scanRoutes);
 

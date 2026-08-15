@@ -13,13 +13,24 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleScan = async (scanInput) => {
+  const handleScan = async (target) => {
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const data = await callScanApi(scanInput);
+      const isGithubRepo = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/.test(
+        target.trim()
+      );
+
+      const data = await callScanApi(
+        isGithubRepo
+          ? { repoUrl: target.trim() }
+          : { targetDir: target.trim() }
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       setResult(data);
     } catch (err) {
       setError(err.message);
