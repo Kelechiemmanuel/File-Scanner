@@ -8,7 +8,7 @@ const scanRoutes = require("./routes/scanRoutes");
 const app = express();
 
 const corsOptions = {
-    origin: "https://file-scanner-dun.vercel.app/",
+    origin: "https://file-scanner-dun.vercel.app",
     credentials: true
 };
 
