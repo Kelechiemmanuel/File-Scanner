@@ -18,14 +18,14 @@ function FindingsTable({ findings }) {
     }
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <table className="w-full border-collapse">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+            <table className="w-full border-collapse min-w-140">
                 <thead>
                     <tr>
                         <th className="text-left text-xs text-gray-500 font-medium bg-gray-50 px-3.5 py-2.5">Severity</th>
                         <th className="text-left text-xs text-gray-500 font-medium bg-gray-50 px-3.5 py-2.5">Rule</th>
                         <th className="text-left text-xs text-gray-500 font-medium bg-gray-50 px-3.5 py-2.5">Location</th>
-                        <th className="text-left text-xs text-gray-500 font-medium bg-gray-50 px-3.5 py-2.5">Snippet</th>
+                        <th className="text-left text-xs text-gray-500 font-medium bg-gray-50 px-3.5 py-2.5 hidden sm:table-cell">Snippet</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,11 +37,11 @@ function FindingsTable({ findings }) {
                             <td className="px-3.5 py-3 align-top">
                                 <SeverityBadge severity={f.severity} />
                             </td>
-                            <td className="px-3.5 py-3 align-top text-sm">{f.rule}</td>
+                            <td className="px-3.5 py-3 align-top text-sm text-gray-500">{f.rule}</td>
                             <td className="px-3.5 py-3 align-top text-xs text-gray-500 font-mono">
                                 {f.file}:{f.line}
                             </td>
-                            <td className="px-3.5 py-3 align-top text-xs text-gray-700 font-mono">{f.snippet}</td>
+                            <td className="px-3.5 py-3 align-top text-xs text-gray-700 font-mono hidden sm:table-cell">{f.snippet}</td>
                         </tr>
                     ))}
                 </tbody>

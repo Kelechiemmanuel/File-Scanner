@@ -1,3 +1,4 @@
+import { TbShieldCheck } from "react-icons/tb";
 
 function severityClass(severity) {
   return severity.toLowerCase();
@@ -32,7 +33,10 @@ export function exportReportAsHtml(result) {
   .sev-medium { background: #fffbe0; }
 </style></head>
 <body>
-  <h1>Automated Code Security Auditor - Report</h1>
+  <TbShieldCheck size={24} className="text-green-700 shrink-0" aria-hidden="true" />
+  <h1 className="text-2xl sm:text-4xl font-bold">
+  <span className="text-green-700">Green</span> Security Auditor
+  </h1>
   <p>Scanned folder: ${scannedFolder}</p>
   <div class="summary">
     <div>Total: ${summary.total}</div>

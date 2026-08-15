@@ -5,45 +5,37 @@ const SummaryCards = ({ summary }) => {
         {
             label: "Total findings",
             value: summary.total,
-            bg: "#f4f4f4",
-            color: "#333"
+            className: " bg-neutral-100 text-neutral-700"
         },
         {
             label: "Critical",
             value: summary.critical,
-            bg: "#ffe1e1",
-            color: "#c0392b"
+            className: "bg-red-100 text-red-700"
         },
         {
             label: "High",
             value: summary.high,
-            bg: "#fff1e0",
-            color: "#d35400"
+            className: "bg-orange-100 text-orange-700"
         },
         {
             label: "Medium",
             value: summary.medium,
-            bg: "#fffbe0",
-            color: "#b7950b"
+            className: "bg-yellow-100 text-yellow-700"
         },
     ];
 
     return (
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {cards.map((card) => (
                 <div
                     key={card.label}
-                    className="rounded-lg p-4"
-                    style={{ backgroundColor: card.bg }}
+                    className={`rounded-lg p-4 ${card.className}`}
                 >
-                    <p className="text-[13px] m-0" style={{ color: card.color }}>
+                    <p className="text-[13px] m-0">
                         {card.label}
                     </p>
 
-                    <p
-                        className="text-2xl font-semibold mt-1"
-                        style={{ color: card.color }}
-                    >
+                    <p className="text-2xl font-semibold mt-1">
                         {card.value}
                     </p>
                 </div>
