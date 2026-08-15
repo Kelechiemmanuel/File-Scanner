@@ -2,7 +2,7 @@ import { useState } from "react";
 import ScanForm from "./components/ScanForm";
 import SummaryCards from "./components/SummaryCards";
 import FindingsTable from "./components/FindingsTable";
-import { callScanApi } from "./services/api";
+import { callScanApi, uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
 import { ImSpinner2 } from "react-icons/im";
 import { TbShieldCheck, TbDownload } from "react-icons/tb";
@@ -39,6 +39,24 @@ function App() {
     }
   };
 
+  const handleUpload = async (files) => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const data = await uploadProject(files);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      setResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900 dark:bg-[#0F172A] dark:text-gray-100 transition-colors duration-300">
       <div className="px-4 sm:px-6 py-6 max-w-270 mx-auto pt-20">
@@ -53,7 +71,11 @@ function App() {
           Scan a project for hardcoded secrets and insecure configs
         </p>
 
-        <ScanForm onScan={handleScan} loading={loading} />
+        <ScanForm
+          onScan={handleScan}
+          onUpload={handleUpload}
+          loading={loading}
+        />
 
         {loading && (
           <p className="flex items-center gap-2 text-sm">

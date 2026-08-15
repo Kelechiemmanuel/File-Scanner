@@ -4,7 +4,9 @@
 // Accepts EITHER a local folder path (targetDir) — used for local/defense demos —
 // OR a public GitHub repo URL (repoUrl) — used for the public-facing version.
 
-
+const os = require("os");
+const path = require("path");
+const crypto = require("crypto");
 const fs = require("fs");
 const { walk } = require("../models/FileWalker");
 const { checkEnvExclusion } = require("../models/EnvChecker");
@@ -53,4 +55,71 @@ async function scan(req, res) {
     }
 }
 
-module.exports = { scan };
+async function scanUpload(req, res) {
+    let tempDir;
+
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                error: "No project files were uploaded."
+            });
+        }
+
+        tempDir = path.join(
+            os.tmpdir(),
+            `auditor-upload-${crypto.randomUUID()}`
+        );
+
+        fs.mkdirSync(tempDir, { recursive: true });
+
+        for (const file of req.files) {
+            const relativePath = file.originalname;
+
+            // Prevent paths from escaping the temporary directory.
+            const safePath = path.normalize(relativePath);
+
+            if (
+                safePath.startsWith("..") ||
+                path.isAbsolute(safePath)
+            ) {
+                continue;
+            }
+
+            const destination = path.join(tempDir, safePath);
+
+            fs.mkdirSync(path.dirname(destination), {
+                recursive: true
+            });
+
+            fs.writeFileSync(destination, file.buffer);
+        }
+
+        const allFindings = await runScan(tempDir);
+
+        return res.json(
+            reportView.toJSON("Uploaded project", allFindings)
+        );
+
+    } catch (err) {
+        console.error("Upload scan error:", err);
+
+        return res.status(500).json({
+            error: "Upload scan failed",
+            details: err.message
+        });
+
+    } finally {
+        if (
+            tempDir &&
+            tempDir.startsWith(os.tmpdir()) &&
+            fs.existsSync(tempDir)
+        ) {
+            fs.rmSync(tempDir, {
+                recursive: true,
+                force: true
+            });
+        }
+    }
+}
+
+module.exports = { scan, scanUpload };

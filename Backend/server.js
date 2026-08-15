@@ -6,9 +6,20 @@ const cors = require("cors");
 const scanRoutes = require("./routes/scanRoutes");
 
 const app = express();
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://file-scanner-dun.vercel.app"
+];
 
 const corsOptions = {
-    origin: "https://file-scanner-dun.vercel.app",
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true
 };
 
