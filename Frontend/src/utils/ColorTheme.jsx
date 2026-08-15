@@ -8,7 +8,7 @@ const ColorTheme = () => {
         document.documentElement.classList.toggle("dark", dark)
     }, [dark])
     return (
-        <button onClick={() => setDark(!dark)}>
+        <button onClick={() => setDark(!dark)} className='text-green-700'>
             {dark ? <FiSun size={24} /> : <FiMoon size={24} />}
         </button>
     )
