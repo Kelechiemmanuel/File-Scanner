@@ -87,12 +87,14 @@ function FindingsTable({ findings }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredFindings.map((f, i) => {
+                    {filteredFindings.map((f) => {
+                        console.log("Finding:", f);
                         const explanation = ruleDescription[f.rule];
-                        const isExpanded = expanded === i;
+                        const findingId = `${f.file}-${f.line}-${f.rule}`;
+                        const isExpanded = expanded === findingId;
 
                         return (
-                            <Fragment key={i}>
+                            <Fragment key={findingId}>
                                 <tr className={`border-t border-gray-100 border-l-4 ${ROW_BORDER[f.severity] || "border-l-transparent"}`}>
                                     <td className="px-3.5 py-3 align-top">
                                         <SeverityBadge severity={f.severity} />
@@ -107,7 +109,7 @@ function FindingsTable({ findings }) {
                                         {f.snippet}
                                     </td>
                                     <td className="px-3.5 py-3 align-top">
-                                        <button type="button" onClick={() => setExpanded(isExpanded ? null : i)}
+                                        <button type="button" onClick={() => setExpanded(isExpanded ? null : findingId)}
                                             className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                                             {isExpanded ? (
                                                 <>
@@ -156,37 +158,38 @@ function FindingsTable({ findings }) {
                                                 </div>
 
                                                 {/* Source context */}
-                                                {f.context && f.context.length > 0 && (
+                                                {/* Source context */}
+                                                {isExpanded && f.context?.length > 0 && (
                                                     <div>
                                                         <p className="font-semibold text-gray-900 dark:text-white mb-2">
                                                             Source
                                                         </p>
 
                                                         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-950 overflow-x-auto">
-                                                            <pre className="text-xs font-mono">
-                                                                {f.context.map((line) => (
+                                                            <div className="text-xs font-mono">
+                                                                {f.context.map((sourceLine) => (
                                                                     <div
-                                                                        key={line.line}
-                                                                        className={`flex ${line.line === f.line
-                                                                                ? "bg-red-900/40"
-                                                                                : ""
+                                                                        key={sourceLine.line}
+                                                                        className={`flex ${sourceLine.line === f.line
+                                                                            ? "bg-red-900/40"
+                                                                            : ""
                                                                             }`}
                                                                     >
-                                                                        <span className="select-none w-10 px-3 py-1 text-right text-gray-500 border-r border-gray-800">
-                                                                            {line.line}
+                                                                        <span className="select-none w-12 px-3 py-1.5 text-right text-gray-500 border-r border-gray-800">
+                                                                            {sourceLine.line}
                                                                         </span>
 
                                                                         <code
-                                                                            className={`px-3 py-1 ${line.line === f.line
-                                                                                    ? "text-red-300"
-                                                                                    : "text-gray-300"
+                                                                            className={`px-3 py-1.5 whitespace-pre ${sourceLine.line === f.line
+                                                                                ? "text-red-300"
+                                                                                : "text-gray-300"
                                                                                 }`}
                                                                         >
-                                                                            {line.content}
+                                                                            {sourceLine.content || " "}
                                                                         </code>
                                                                     </div>
                                                                 ))}
-                                                            </pre>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )}
