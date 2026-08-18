@@ -88,7 +88,6 @@ function FindingsTable({ findings }) {
                 </thead>
                 <tbody>
                     {filteredFindings.map((f) => {
-                        console.log("Finding:", f);
                         const explanation = ruleDescription[f.rule];
                         const findingId = `${f.file}-${f.line}-${f.rule}`;
                         const isExpanded = expanded === findingId;
@@ -157,7 +156,6 @@ function FindingsTable({ findings }) {
                                                     </p>
                                                 </div>
 
-                                                {/* Source context */}
                                                 {/* Source context */}
                                                 {isExpanded && f.context?.length > 0 && (
                                                     <div>
