@@ -8,8 +8,6 @@ const path = require("path");
 
 const SCAN_EXTENSIONS = [".js", ".ts", ".env", ".json"];
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
-const SKIP_FILES = new Set(["package-lock.json", "yarn.lock", "pnpm-lock.yaml"]);
-const MAX_FILE_SIZE = 500 * 1024; // 500KB — larger files are skipped
 
 function walk(dir, files = []) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -19,16 +17,12 @@ function walk(dir, files = []) {
                 walk(path.join(dir, entry.name), files);
             }
         } else if (
-            (SCAN_EXTENSIONS.includes(path.extname(entry.name)) ||
-                entry.name === ".env") &&
-            !SKIP_FILES.has(entry.name)
+            SCAN_EXTENSIONS.includes(path.extname(entry.name)) ||
+            entry.name === ".env"
         ) {
             const filePath = path.join(dir, entry.name);
-            const { size } = fs.statSync(filePath);
 
-            if (size <= MAX_FILE_SIZE) {
-                files.push(filePath);
-            }
+            files.push(filePath);
         }
     }
 
