@@ -1,35 +1,50 @@
 /**
  * models/FileWalker.js
- * Walks a project directory and returns the list of files worth scanning.
+ * Optimized Native Asynchronous Implementation
  */
 
-const fs = require("fs");
+const fs = require("fs/promises");
 const path = require("path");
 
-const SCAN_EXTENSIONS = [".js", ".ts", ".env", ".json"];
+const SCAN_EXTENSIONS = new Set([".js", ".ts", ".env", ".json"]);
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
 const SKIP_FILES = new Set(["package-lock.json", "yarn.lock", "pnpm-lock.yaml"]);
-const MAX_FILE_SIZE = 500 * 1024; // 500KB — larger files are skipped
+const MAX_FILE_SIZE = 500 * 1024; // 500KB
 
-function walk(dir, files = []) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+async function walk(dir) {
+    let files = [];
 
-        if (entry.isDirectory()) {
-            if (!SKIP_DIRS.has(entry.name)) {
-                walk(path.join(dir, entry.name), files);
+    try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+
+        const tasks = entries.map(async (entry) => {
+            const fullPath = path.join(dir, entry.name);
+
+            if (entry.isDirectory()) {
+                if (!SKIP_DIRS.has(entry.name)) {
+                    return await walk(fullPath);
+                }
+                return [];
             }
-        } else if (
-            (SCAN_EXTENSIONS.includes(path.extname(entry.name)) ||
-                entry.name === ".env") &&
-            !SKIP_FILES.has(entry.name)
-        ) {
-            const filePath = path.join(dir, entry.name);
-            const { size } = fs.statSync(filePath);
 
-            if (size <= MAX_FILE_SIZE) {
-                files.push(filePath);
+            const ext = path.extname(entry.name);
+            const isMatch = SCAN_EXTENSIONS.has(ext) || entry.name === ".env";
+
+            if (isMatch && !SKIP_FILES.has(entry.name)) {
+                // Stat asynchronously
+                const stats = await fs.stat(fullPath);
+                if (stats.size <= MAX_FILE_SIZE) {
+                    return [fullPath];
+                }
             }
-        }
+
+            return [];
+        });
+
+        const results = await Promise.all(tasks);
+        files = results.flat();
+    } catch (err) {
+        // Handle unreadable directories gracefully
     }
 
     return files;
