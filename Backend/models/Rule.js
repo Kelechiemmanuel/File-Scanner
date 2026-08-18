@@ -59,6 +59,7 @@ function matchLine(line) {
                 name: rule.name,
                 severity: rule.severity
             })
+            break // one match per line is enough — stop checking remaining rules
         }
     }
     return matches
