@@ -74,6 +74,20 @@ const ruleDescription = {
             "An environment file containing potentially sensitive configuration exists, but the project has no .gitignore to exclude it.",
         recommendation:
             "Create a .gitignore file and add the environment file to it before committing any code."
+    },
+
+    "Possible missing input validation": {
+        description:
+            "User input from the request (body, query, or URL parameters) is used directly without any visible validation, which can allow malformed or malicious input to reach the application logic.",
+        recommendation:
+            "Validate and sanitize incoming request data using a library like express-validator, Joi, or Zod before using it."
+    },
+
+    "Dependency check could not complete": {
+        description:
+            "The dependency vulnerability check could not run successfully for this project, often because no package-lock.json exists yet, or the check couldn't reach the npm registry.",
+        recommendation:
+            "Run 'npm install' to generate a package-lock.json, ensure the server has network access, then re-run the scan."
     }
 };
 

@@ -1,23 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import IntroSection from "./components/IntroSection";
 import ScanForm from "./components/ScanForm";
 import SummaryCards from "./components/SummaryCards";
 import SecurityScore from "./components/SecurityScore";
+import AnalyticsOverview from "./components/AnalyticsOverview";
 import FindingsTable from "./components/FindingsTable";
+// import Review from "./components/Review"
 import { callScanApi, uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
 import { ImSpinner2 } from "react-icons/im";
 import { TbShieldCheck, TbDownload } from "react-icons/tb";
 import ColorTheme from "./utils/ColorTheme";
+import LandingPreview from "./components/LandingPreview";
+import Hero from "./components/Hero";
+
+const REFRESH_INTERVAL_SECONDS = 30;
 
 function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [liveMode, setLiveMode] = useState(false);
+  const [secondsUntilNext, setSecondsUntilNext] = useState(REFRESH_INTERVAL_SECONDS);
 
-  const handleScan = async (target) => {
+  // Remembers whichever of the two scan paths (target string vs uploaded
+  // files) was used last, so live mode can re-run the exact same scan.
+  const lastRunRef = useRef(null);
+
+  const handleScan = useCallback(async (target) => {
     setLoading(true);
     setError(null);
-    setResult(null);
 
     try {
       const isGithubRepo = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/.test(
@@ -30,53 +42,87 @@ function App() {
           : { targetDir: target.trim() }
       );
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       setResult(data);
+      lastRunRef.current = { kind: "scan", target };
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleUpload = async (files) => {
+  const handleUpload = useCallback(async (files) => {
     setLoading(true);
     setError(null);
-    setResult(null);
 
     try {
       const data = await uploadProject(files);
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       setResult(data);
+      lastRunRef.current = { kind: "upload", files };
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const handleScanSubmit = (target) => {
+    setResult(null);
+    handleScan(target);
+  };
+
+  const handleUploadSubmit = (files) => {
+    setResult(null);
+    handleUpload(files);
+  };
+
+  // Live mode: re-run whichever scan (path/repo vs uploaded folder) was last
+  // used, every REFRESH_INTERVAL_SECONDS. This re-scans for real — it does
+  // not simulate or fake changing numbers.
+  useEffect(() => {
+    if (!liveMode) return;
+
+    setSecondsUntilNext(REFRESH_INTERVAL_SECONDS);
+
+    const countdown = setInterval(() => {
+      setSecondsUntilNext((s) => (s <= 1 ? REFRESH_INTERVAL_SECONDS : s - 1));
+    }, 1000);
+
+    const rescan = setInterval(() => {
+      const last = lastRunRef.current;
+      if (!last) return;
+      if (last.kind === "scan") {
+        handleScan(last.target);
+      } else {
+        handleUpload(last.files);
+      }
+    }, REFRESH_INTERVAL_SECONDS * 1000);
+
+    return () => {
+      clearInterval(countdown);
+      clearInterval(rescan);
+    };
+  }, [liveMode, handleScan, handleUpload]);
+
+  const toggleLive = () => {
+    if (!lastRunRef.current) return; // nothing scanned yet to auto-rerun
+    setLiveMode((v) => !v);
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-[#0F172A] dark:text-gray-100 transition-colors duration-300">
-      <div className="px-4 sm:px-6 py-6 max-w-270 mx-auto pt-20">
-        <div className="flex items-center justify-center gap-5 mb-1 text-center">
-          <TbShieldCheck size={50} className="text-green-700 shrink-0" aria-hidden="true" />
-          <h1 className="text-2xl sm:text-4xl font-bold">
-            <span className="text-green-700">Green</span> Security Auditor
-          </h1>
-          <ColorTheme />
-        </div>
-        <p className="dark:text-white text-sm sm:text-xl my-4 sm:my-5 text-center">
-          Scan a project for hardcoded secrets and insecure configs
-        </p>
+    <div className="min-h-screen bg-[#07116f] text-white py-20">
+      <div className="px-4 sm:px-6 max-w-290 mx-auto pt-2">
 
-        <ScanForm
-          onScan={handleScan}
-          onUpload={handleUpload}
-          loading={loading}
-        />
+        <Hero onGetStarted={() => document.getElementById("scan-form")?.scrollIntoView({ behavior: "smooth" })} />
+        <IntroSection />
+
+        <div id="scan-form">
+          <ScanForm
+            onScan={handleScanSubmit}
+            onUpload={handleUploadSubmit}
+            loading={loading}
+          />
+        </div>
 
         {loading && (
           <p className="flex items-center gap-2 text-sm">
@@ -90,7 +136,14 @@ function App() {
           <>
             <SecurityScore summary={result.summary} />
 
-            <SummaryCards summary={result.summary} />
+            <AnalyticsOverview
+              result={result}
+              liveMode={liveMode}
+              secondsUntilNext={secondsUntilNext}
+              onToggleLive={toggleLive}
+            />
+
+            {/* <SummaryCards summary={result.summary} /> */}
 
             <FindingsTable findings={result.findings} />
 
@@ -106,6 +159,8 @@ function App() {
           </>
         )}
       </div>
+      {/* <Review /> */}
+      <LandingPreview />
     </div>
   );
 }

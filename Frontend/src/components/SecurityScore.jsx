@@ -18,7 +18,7 @@ function SecurityScore({ summary }) {
     const status = getStatus();
 
     return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 mb-6">
+        <div className="bg-[#070f57] border border-blue-800/50 rounded-2xl text-white p-5">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-lg font-semibold">
@@ -33,18 +33,18 @@ function SecurityScore({ summary }) {
                 <div className="text-right">
                     <p className="text-3xl font-bold">
                         {score}
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm">
                             /100
                         </span>
                     </p>
 
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 ">
                         {status}
                     </p>
                 </div>
             </div>
 
-            <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div className="w-full h-0.5 bg-gray-800 rounded-full overflow-hidden">
                 <div
                     className="h-full bg-green-600 rounded-full transition-all duration-700"
                     style={{ width: `${score}%` }}

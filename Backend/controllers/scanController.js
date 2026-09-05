@@ -1,4 +1,3 @@
-
 // controllers/scanController.js
 // Receives the request, calls the models in the right order, sends the response.
 // Accepts EITHER a local folder path (targetDir) — used for local/defense demos —
@@ -11,15 +10,47 @@ const fs = require("fs");
 const { walk } = require("../models/FileWalker");
 const { checkEnvExclusion } = require("../models/EnvChecker");
 const { scanAll } = require("../models/SecretScanner");
+const { checkContent } = require("../models/InputValidationChecker");
+const { checkDependencies } = require("../models/DependencyChecker");
 const { sortBySeverity } = require("../models/Finding");
 const { cloneRepo, cleanupClone } = require("../models/RepoCloner");
 const reportView = require("../views/reportView");
+
+function runInputValidationCheck(files) {
+    let findings = [];
+    for (const file of files) {
+        try {
+            const content = fs.readFileSync(file, "utf8");
+            findings = findings.concat(checkContent(file, content));
+        } catch {
+            // unreadable/binary file — skip it rather than fail the whole scan
+        }
+    }
+    return findings;
+}
 
 async function runScan(dirToScan) {
     const files = walk(dirToScan);
     const envCheck = checkEnvExclusion(dirToScan, files);
     const secretFindings = scanAll(files, envCheck.unexcludedEnvFiles);
-    return sortBySeverity([...secretFindings, ...envCheck.findings]);
+    const inputValidationFindings = runInputValidationCheck(files);
+    const dependencyFindings = await checkDependencies(dirToScan);
+    return sortBySeverity([
+        ...secretFindings,
+        ...envCheck.findings,
+        ...inputValidationFindings,
+        ...dependencyFindings,
+    ]);
+}
+
+// Strips the temp/root folder from every finding's file path, so reports
+// always show a clean relative path (e.g. "backend/main.js") regardless of
+// whether the scan came from a local path, a cloned repo, or an upload.
+function makeRelative(rootDir, findings) {
+    return findings.map((f) => ({
+        ...f,
+        file: path.relative(rootDir, f.file).split(path.sep).join("/"),
+    }));
 }
 
 async function scan(req, res) {
@@ -35,7 +66,8 @@ async function scan(req, res) {
             return res.status(400).json({ error: "That folder path doesn't exist on the server." });
         }
         try {
-            const allFindings = await runScan(targetDir);
+            const rawFindings = await runScan(targetDir);
+            const allFindings = makeRelative(targetDir, rawFindings);
             return res.json(reportView.toJSON(targetDir, allFindings));
         } catch (err) {
             return res.status(500).json({ error: "Scan failed", details: err.message });
@@ -46,7 +78,8 @@ async function scan(req, res) {
     let tempDir;
     try {
         tempDir = await cloneRepo(repoUrl);
-        const allFindings = await runScan(tempDir);
+        const rawFindings = await runScan(tempDir);
+        const allFindings = makeRelative(tempDir, rawFindings);
         return res.json(reportView.toJSON(repoUrl, allFindings));
     } catch (err) {
         return res.status(400).json({ error: err.message });
@@ -94,7 +127,8 @@ async function scanUpload(req, res) {
             fs.writeFileSync(destination, file.buffer);
         }
 
-        const allFindings = await runScan(tempDir);
+        const rawFindings = await runScan(tempDir);
+        const allFindings = makeRelative(tempDir, rawFindings);
 
         return res.json(
             reportView.toJSON("Uploaded project", allFindings)

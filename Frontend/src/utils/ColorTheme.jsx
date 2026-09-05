@@ -10,7 +10,7 @@ const ColorTheme = () => {
     }, [dark])
     return (
         <button onClick={() => setDark(!dark)} className='text-green-700'>
-            {dark ? <FiSun size={24} /> : <RiMoonFill size={24} />}
+            {dark ? <RiMoonFill size={24} /> : <FiSun size={24} />}
         </button>
     )
 }
