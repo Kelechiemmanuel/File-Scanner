@@ -1,5 +1,5 @@
-// const BASE_URL = "https://file-scanner-8u8e.onrender.com/api";
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://file-scanner-8u8e.onrender.com/api";
+// const BASE_URL = "http://localhost:5000/api";
 
 export const callScanApi = async ({ targetDir, repoUrl }) => {
     try {
