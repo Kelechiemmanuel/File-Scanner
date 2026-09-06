@@ -1,55 +1,47 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import IntroSection from "./components/IntroSection";
 import ScanForm from "./components/ScanForm";
-import SummaryCards from "./components/SummaryCards";
 import SecurityScore from "./components/SecurityScore";
 import AnalyticsOverview from "./components/AnalyticsOverview";
 import FindingsTable from "./components/FindingsTable";
-// import Review from "./components/Review"
-import { callScanApi, uploadProject } from "./services/api";
+import { uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
 import { ImSpinner2 } from "react-icons/im";
-import { TbShieldCheck, TbDownload } from "react-icons/tb";
-import ColorTheme from "./utils/ColorTheme";
+import { TbDownload } from "react-icons/tb";
 import LandingPreview from "./components/LandingPreview";
 import Hero from "./components/Hero";
+import FeatureCarousel from "./components/FeatureCarousel";
+import useScanStream from "./hooks/useScanStream";
 
 const REFRESH_INTERVAL_SECONDS = 30;
 
+// Derives the same shape SecurityScore/AnalyticsOverview expect from
+// result.summary, but computed from live findings instead of a
+// one-shot backend response.
+function summarizeFindings(findings) {
+  const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+  findings.forEach((f) => {
+    if (counts[f.severity] !== undefined) counts[f.severity] += 1;
+  });
+  return { total: findings.length, ...counts };
+}
+
 function App() {
-  const [result, setResult] = useState(null);
+  const { findings, currentFile, status, error: streamError, startScan } = useScanStream();
+
+  const [uploadResult, setUploadResult] = useState(null); // still non-streaming for now
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [liveMode, setLiveMode] = useState(false);
   const [secondsUntilNext, setSecondsUntilNext] = useState(REFRESH_INTERVAL_SECONDS);
 
-  // Remembers whichever of the two scan paths (target string vs uploaded
-  // files) was used last, so live mode can re-run the exact same scan.
   const lastRunRef = useRef(null);
 
-  const handleScan = useCallback(async (target) => {
-    setLoading(true);
+  const handleScanSubmit = (target) => {
     setError(null);
-
-    try {
-      const isGithubRepo = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\.git)?\/?$/.test(
-        target.trim()
-      );
-
-      const data = await callScanApi(
-        isGithubRepo
-          ? { repoUrl: target.trim() }
-          : { targetDir: target.trim() }
-      );
-
-      setResult(data);
-      lastRunRef.current = { kind: "scan", target };
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    lastRunRef.current = { kind: "scan", target };
+    startScan(target); // ← real SSE stream, findings arrive as they're found
+  };
 
   const handleUpload = useCallback(async (files) => {
     setLoading(true);
@@ -57,7 +49,7 @@ function App() {
 
     try {
       const data = await uploadProject(files);
-      setResult(data);
+      setUploadResult(data);
       lastRunRef.current = { kind: "upload", files };
     } catch (err) {
       setError(err.message);
@@ -66,19 +58,13 @@ function App() {
     }
   }, []);
 
-  const handleScanSubmit = (target) => {
-    setResult(null);
-    handleScan(target);
-  };
-
   const handleUploadSubmit = (files) => {
-    setResult(null);
+    setUploadResult(null);
     handleUpload(files);
   };
 
-  // Live mode: re-run whichever scan (path/repo vs uploaded folder) was last
-  // used, every REFRESH_INTERVAL_SECONDS. This re-scans for real — it does
-  // not simulate or fake changing numbers.
+  // Live mode re-runs the last scan on an interval. For the streaming
+  // path this just calls startScan again.
   useEffect(() => {
     if (!liveMode) return;
 
@@ -92,7 +78,7 @@ function App() {
       const last = lastRunRef.current;
       if (!last) return;
       if (last.kind === "scan") {
-        handleScan(last.target);
+        startScan(last.target);
       } else {
         handleUpload(last.files);
       }
@@ -102,55 +88,61 @@ function App() {
       clearInterval(countdown);
       clearInterval(rescan);
     };
-  }, [liveMode, handleScan, handleUpload]);
+  }, [liveMode, startScan, handleUpload]);
 
   const toggleLive = () => {
-    if (!lastRunRef.current) return; // nothing scanned yet to auto-rerun
+    if (!lastRunRef.current) return;
     setLiveMode((v) => !v);
   };
+
+  const hasStreamedResult = status !== "idle";
+  const summary = summarizeFindings(findings);
 
   return (
     <div className="min-h-screen bg-[#07116f] text-white py-20">
       <div className="px-4 sm:px-6 max-w-290 mx-auto pt-2">
 
         <Hero onGetStarted={() => document.getElementById("scan-form")?.scrollIntoView({ behavior: "smooth" })} />
-        <IntroSection />
 
         <div id="scan-form">
           <ScanForm
             onScan={handleScanSubmit}
             onUpload={handleUploadSubmit}
-            loading={loading}
+            loading={loading || status === "scanning"}
           />
         </div>
 
-        {loading && (
+        {status === "scanning" && (
           <p className="flex items-center gap-2 text-sm">
             <ImSpinner2 className="animate-spin" />
-            Scanning...
+            {currentFile ? `Scanning ${currentFile}...` : "Scanning..."}
           </p>
         )}
-        {error && <p className="text-[#c0392b] text-sm">{error}</p>}
+        {(error || streamError) && (
+          <p className="text-[#c0392b] text-sm">{error || streamError}</p>
+        )}
 
-        {result && (
+        {hasStreamedResult && (
           <>
-            <SecurityScore summary={result.summary} />
+            <SecurityScore summary={summary} />
 
             <AnalyticsOverview
-              result={result}
+              result={{ summary, findings }}
               liveMode={liveMode}
               secondsUntilNext={secondsUntilNext}
               onToggleLive={toggleLive}
             />
 
-            {/* <SummaryCards summary={result.summary} /> */}
-
-            <FindingsTable findings={result.findings} />
+            <FindingsTable
+              findings={findings}
+              currentFile={currentFile}
+              scanning={status === "scanning"}
+            />
 
             <div className="flex justify-center sm:justify-end mt-3">
               <button
                 className="flex items-center justify-center gap-1.5 border p-2 rounded-sm hover:bg-gray-50 w-full sm:w-auto text-sm"
-                onClick={() => exportReportAsHtml(result)}
+                onClick={() => exportReportAsHtml({ summary, findings })}
               >
                 <TbDownload size={15} aria-hidden="true" />
                 Export report
@@ -159,8 +151,10 @@ function App() {
           </>
         )}
       </div>
-      {/* <Review /> */}
+
       <LandingPreview />
+      <FeatureCarousel />
+      <IntroSection />
     </div>
   );
 }

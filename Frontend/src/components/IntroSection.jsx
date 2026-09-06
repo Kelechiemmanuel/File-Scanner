@@ -14,7 +14,7 @@ const STEPS = [
 
 function IntroSection() {
     return (
-        <div className="mb-8 bg-[#070f58] px-4 py-6 max-w-550 rounded-2xl border border-blue-800/70">
+        <div className="max-w-290 m-auto mb-8 bg-[#070f58] px-4 py-6 rounded-2xl border border-blue-800/70">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 {CAPABILITIES.map((c) => (
                     <div key={c.title} className="border border-blue-800/70 bg-[#101d91] rounded-lg p-4">

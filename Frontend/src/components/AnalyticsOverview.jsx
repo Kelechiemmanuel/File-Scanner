@@ -190,7 +190,7 @@ function AnalyticsOverview({ result, history, liveMode, secondsUntilNext, onTogg
                             <span className="text-3xl font-bold">{summary.total}</span>
                             <span className="text-sm text-blue-200 mb-1">total findings</span>
                         </div>
-                        <div className="h-[200px]">
+                        <div className="h-50">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={trendData}>
                                     <defs>
@@ -233,7 +233,7 @@ function AnalyticsOverview({ result, history, liveMode, secondsUntilNext, onTogg
                 <div className="grid lg:grid-cols-[1fr_2fr] gap-4">
                     <Card className="p-5">
                         <SectionHeader title="Findings by rule" right="count" />
-                        <div className="h-[150px]">
+                        <div className="h-38">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={ruleData}>
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={false} />
@@ -258,7 +258,7 @@ function AnalyticsOverview({ result, history, liveMode, secondsUntilNext, onTogg
                                         <div key={`${f.file}-${f.line}-${i}`} className="flex items-center gap-3 py-2.5">
                                             <Icon className={meta.color} />
                                             <span className="text-sm text-blue-50 flex-1 truncate">{f.rule}</span>
-                                            <span className="hidden sm:block text-xs px-2 py-1 rounded bg-blue-950 text-blue-200 truncate max-w-[160px]">
+                                            <span className="hidden sm:block text-xs px-2 py-1 rounded bg-blue-950 text-blue-200 truncate max-w-40">
                                                 {f.file}
                                             </span>
                                             <span className="text-xs text-blue-300">L{f.line}</span>
