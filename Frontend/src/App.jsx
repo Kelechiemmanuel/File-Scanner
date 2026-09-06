@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import IntroSection from "./components/IntroSection";
 import ScanForm from "./components/ScanForm";
-// import SummaryCards from "./components/SummaryCards";
 import SecurityScore from "./components/SecurityScore";
 import AnalyticsOverview from "./components/AnalyticsOverview";
 import FindingsTable from "./components/FindingsTable";
-// import Review from "./components/Review"
 import { callScanApi, uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
 import { ImSpinner2 } from "react-icons/im";
-// import { TbShieldCheck, TbDownload } from "react-icons/tb";
-// import ColorTheme from "./utils/ColorTheme";
+import { TbDownload } from "react-icons/tb";
 import LandingPreview from "./components/LandingPreview";
 import Hero from "./components/Hero";
 import FeatureCarousel from "./components/FeatureCarousel";
@@ -106,7 +103,7 @@ function App() {
   }, [liveMode, handleScan, handleUpload]);
 
   const toggleLive = () => {
-    if (!lastRunRef.current) return;
+    if (!lastRunRef.current) return; // nothing scanned yet to auto-rerun
     setLiveMode((v) => !v);
   };
 
@@ -115,7 +112,6 @@ function App() {
       <div className="px-4 sm:px-6 max-w-290 mx-auto pt-2">
 
         <Hero onGetStarted={() => document.getElementById("scan-form")?.scrollIntoView({ behavior: "smooth" })} />
-        {/* <IntroSection /> */}
 
         <div id="scan-form">
           <ScanForm
@@ -144,8 +140,6 @@ function App() {
               onToggleLive={toggleLive}
             />
 
-            {/* <SummaryCards summary={result.summary} /> */}
-
             <FindingsTable findings={result.findings} />
 
             <div className="flex justify-center sm:justify-end mt-3">
@@ -160,7 +154,7 @@ function App() {
           </>
         )}
       </div>
-      {/* <Review /> */}
+
       <LandingPreview />
       <FeatureCarousel />
       <IntroSection />
