@@ -1,6 +1,6 @@
 import SeverityBadge from "./SeverityBadge";
 import ruleDescription from "../utils/ruleDescription";
-import { TbCheck, TbChevronDown, TbChevronUp, TbSearch, TbLoader2 } from "react-icons/tb";
+import { TbCheck, TbChevronDown, TbChevronUp, TbSearch } from "react-icons/tb";
 import { Fragment, useState } from "react";
 
 function getExplanation(rule) {
@@ -23,16 +23,7 @@ const ROW_BORDER = {
     MEDIUM: "border-l-blue-400",
 };
 
-/**
- * `findings` can be a static, complete array (existing behavior) or a
- * live array that grows over time from useScanStream — either way this
- * component just renders whatever's currently in it.
- *
- * `currentFile` and `scanning` are optional — pass them when this table
- * is driven by useScanStream to show a live "scanning X..." row while
- * results are still coming in. Omit them for the old static-results flow.
- */
-function FindingsTable({ findings, currentFile = null, scanning = false }) {
+function FindingsTable({ findings }) {
     const [expanded, setExpanded] = useState(null);
     const [search, setSearch] = useState("");
     const [severityFilter, setSeverityFilter] = useState("ALL");
@@ -50,7 +41,7 @@ function FindingsTable({ findings, currentFile = null, scanning = false }) {
         return matchesSearch && matchesSeverity;
     });
 
-    if (findings.length === 0 && !scanning) {
+    if (findings.length === 0) {
         return (
             <div className="flex items-center gap-2.5 bg-emerald-500/10 text-emerald-400 px-4 py-3.5 rounded-lg text-sm font-medium mb-4">
                 <TbCheck size={16} aria-hidden="true" />
@@ -93,17 +84,9 @@ function FindingsTable({ findings, currentFile = null, scanning = false }) {
 
             </div>
 
-            {/* Live scan progress indicator */}
-            {scanning && currentFile && (
-                <div className="flex items-center gap-2 px-3.5 pb-3 text-xs text-blue-300 font-mono">
-                    <TbLoader2 size={14} className="animate-spin" />
-                    Scanning {currentFile}...
-                </div>
-            )}
-
             {filteredFindings.length === 0 ? (
                 <p className="text-sm text-blue-200 px-3.5 py-6 text-center">
-                    {scanning ? "No findings yet — scan in progress." : "No findings match your search or filter."}
+                    No findings match your search or filter.
                 </p>
             ) : (
                 <table className="w-full border-collapse min-w-140">
@@ -125,7 +108,7 @@ function FindingsTable({ findings, currentFile = null, scanning = false }) {
                             return (
                                 <Fragment key={findingId}>
                                     <tr
-                                        className={`bg-[#101d91] hover:bg-[#152496] transition-colors border-t border-blue-800/50 border-l-4 animate-in fade-in slide-in-from-bottom-1 duration-300 ${ROW_BORDER[f.severity] || "border-l-transparent"}`}
+                                        className={`bg-[#101d91] hover:bg-[#152496] transition-colors border-t border-blue-800/50 border-l-4 ${ROW_BORDER[f.severity] || "border-l-transparent"}`}
                                     >
                                         <td className="px-3.5 py-3 align-top">
                                             <SeverityBadge severity={f.severity} />

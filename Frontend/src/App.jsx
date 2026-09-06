@@ -5,15 +5,15 @@ import ScanForm from "./components/ScanForm";
 import SecurityScore from "./components/SecurityScore";
 import AnalyticsOverview from "./components/AnalyticsOverview";
 import FindingsTable from "./components/FindingsTable";
+// import Review from "./components/Review"
 import { callScanApi, uploadProject } from "./services/api";
 import { exportReportAsHtml } from "./utils/exportReport";
 import { ImSpinner2 } from "react-icons/im";
-import { TbShieldCheck, TbDownload } from "react-icons/tb";
+// import { TbShieldCheck, TbDownload } from "react-icons/tb";
 // import ColorTheme from "./utils/ColorTheme";
 import LandingPreview from "./components/LandingPreview";
 import Hero from "./components/Hero";
 import FeatureCarousel from "./components/FeatureCarousel";
-import useScanStream from "./hooks/useScanStream";
 
 const REFRESH_INTERVAL_SECONDS = 30;
 
@@ -23,8 +23,6 @@ function App() {
   const [error, setError] = useState(null);
   const [liveMode, setLiveMode] = useState(false);
   const [secondsUntilNext, setSecondsUntilNext] = useState(REFRESH_INTERVAL_SECONDS);
-  const { findings, currentFile, status, startScan } = useScanStream();
-
 
   // Remembers whichever of the two scan paths (target string vs uploaded
   // files) was used last, so live mode can re-run the exact same scan.
@@ -108,7 +106,7 @@ function App() {
   }, [liveMode, handleScan, handleUpload]);
 
   const toggleLive = () => {
-    if (!lastRunRef.current) return; // nothing scanned yet to auto-rerun
+    if (!lastRunRef.current) return;
     setLiveMode((v) => !v);
   };
 
@@ -148,12 +146,7 @@ function App() {
 
             {/* <SummaryCards summary={result.summary} /> */}
 
-            <FindingsTable
-              findings={findings.length > 0 ? findings : (result.findings || [])}
-              currentFile={currentFile}
-              scanning={status === "scanning"}
-            />
-
+            <FindingsTable findings={result.findings} />
 
             <div className="flex justify-center sm:justify-end mt-3">
               <button
