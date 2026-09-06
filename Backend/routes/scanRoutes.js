@@ -12,6 +12,6 @@ router.post(
     scanController.scanUpload
 );
 
-router.get("/api/scan/stream", scanStream);
+router.get("/scan/stream", scanStream);
 
 module.exports = router;
