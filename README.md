@@ -12,7 +12,7 @@ environment configurations.
 Node.js, Express, React, Tailwind CSS
 
 ## How to Run
-1. Clone the repo: `<https://github.com/Kelechiemmanuel/File-Scanner>`
+1. Clone the repo: `https://github.com/Kelechiemmanuel/File-Scanner`
 2. Backend: `cd Backend && npm install && npm start`
 3. Frontend: `cd Frontend && npm install && npm run dev`
 
